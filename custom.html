@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>CUSTOM - DRAW RUN</title>
+  <style>
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 3vh;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      background-size: cover;
+      color: white;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    body {
+      transform-origin: center top;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      margin-top: 0;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      color: #fff;
+      text-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f;
+    }
+
+    .custom-container {
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 15px;
+      width: 85%;
+      max-width: 350px;
+      max-height: 65vh;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-sizing: border-box;
+    }
+
+    .character-preview {
+      width: 140px;
+      height: 140px;
+      border: 2px dashed rgba(255, 255, 255, 0.3);
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      /* ▼ ここを #fff にすると背景が白になります */
+      background: #fff;
+    }
+
+    .character-preview img {
+      max-width: 80%;
+      max-height: 80%;
+      object-fit: contain;
+    }
+
+    .skin-name {
+      font-size: 18px;
+      font-weight: bold;
+      color: #00ffcc;
+      margin-bottom: 15px;
+      letter-spacing: 1px;
+    }
+
+    .skin-select-row {
+      display: flex;
+      gap: 15px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .skin-btn {
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .skin-btn:active {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .back-btn {
+      margin-top: 15px;
+      padding: 10px 30px;
+      background: linear-gradient(45deg, #ff007f, #ff758c);
+      color: white;
+      text-decoration: none;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 4px 15px rgba(255, 0, 127, 0.4);
+      border: none;
+      cursor: pointer;
+      display: inline-block;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>CUSTOM</h1>
+
+  <div class="custom-container">
+    <div class="character-preview">
+      <img id="skin-image" src="" alt="Skin Preview">
+    </div>
+    <div class="skin-name" id="skin-name-display">読み込み中...</div>
+    
+    <div class="skin-select-row">
+      <button class="skin-btn menu-btn" id="prev-skin">◀ 前へ</button>
+      <button class="skin-btn menu-btn" id="next-skin">次へ ▶</button>
+    </div>
+  </div>
+
+  <a href="index.html" class="back-btn menu-btn">BACK</a>
+
+  <audio id="setting-bgm" src="title.mp3" loop></audio>
+  <audio id="nyu-sound" src="ニュッ1.mp3" preload="auto"></audio>
+
+  <script>
+    function adjustScale() {
+      const scale = Math.min(window.innerWidth / 400, window.innerHeight / 700);
+      document.body.style.transform = `scale(${scale > 1 ? 1 : scale})`;
+    }
+    window.addEventListener("load", adjustScale);
+    window.addEventListener("resize", adjustScale);
+
+    const characterList = [
+      { src: "player.png", name: "棒人間" },
+      { src: "player2.png", name: "格闘家" },
+      { src: "player3.png", name: "忍者" }
+    ];
+
+    let currentSkinIndex = parseInt(localStorage.getItem("drawRunSkinIndex")) || 0;
+
+    const skinImage = document.getElementById("skin-image");
+    const skinNameDisplay = document.getElementById("skin-name-display");
+
+    function updateDisplay() {
+      if (characterList.length > 0) {
+        const currentSkin = characterList[currentSkinIndex];
+        skinImage.src = currentSkin.src;
+        skinNameDisplay.textContent = currentSkin.name;
+        localStorage.setItem("drawRunSkinIndex", currentSkinIndex);
+      }
+    }
+
+    updateDisplay();
+
+    const skinButtons = document.querySelectorAll(".skin-btn");
+    skinButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (btn.id === "prev-skin") {
+          currentSkinIndex = (currentSkinIndex - 1 + characterList.length) % characterList.length;
+        } else if (btn.id === "next-skin") {
+          currentSkinIndex = (currentSkinIndex + 1 + characterList.length) % characterList.length;
+        }
+        updateDisplay();
+      });
+    });
+
+    const settingBgm = document.getElementById("setting-bgm");
+    const nyuSound = document.getElementById("nyu-sound");
+
+    const savedVolume = localStorage.getItem("drawRunBgmVolume");
+    const savedPlayState = localStorage.getItem("drawRunBgmPlaying");
+    const savedCurrentTime = localStorage.getItem("drawRunBgmCurrentTime");
+    let isPlaying = savedPlayState !== "false";
+
+    if (savedVolume !== null) {
+      settingBgm.volume = savedVolume / 100;
+    } else {
+      settingBgm.volume = 0.5;
+    }
+
+    if (savedCurrentTime !== null) {
+      settingBgm.currentTime = parseFloat(savedCurrentTime);
+    }
+
+    if (isPlaying) {
+      settingBgm.play().catch(() => {});
+    } else {
+      settingBgm.pause();
+    }
+
+    window.addEventListener("beforeunload", () => {
+      localStorage.setItem("drawRunBgmCurrentTime", settingBgm.currentTime);
+    });
+
+    const menuButtons = document.querySelectorAll(".menu-btn");
+    menuButtons.forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const seEnabled = (localStorage.getItem("drawRunSeEnabled") === "true");
+        if (seEnabled && nyuSound) {
+          const savedSeVolume = localStorage.getItem("drawRunSeVolume");
+          nyuSound.volume = savedSeVolume !== null ? savedSeVolume / 100 : 0.5;
+          nyuSound.currentTime = 0;
+          nyuSound.play().catch(() => {});
+        }
+
+        if (btn.tagName === "A") {
+          e.preventDefault();
+          const targetUrl = btn.href;
+          setTimeout(() => {
+            window.location.href = targetUrl;
+          }, 200);
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

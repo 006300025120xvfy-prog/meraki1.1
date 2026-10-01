@@ -1,0 +1,54 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background: rgb(255, 255, 255);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* ゲーム全体を囲むコンテナ（要素の位置基準にする） */
+#game-container {
+  position: relative;
+  width: 400px;
+  height: 700px;
+}
+
+canvas {
+  display: block;
+}
+
+/* ★要素を非表示にするための必須クラス */
+.hidden {
+  display: none !important;
+}
+
+/* ★カウントダウン表示（画面中央に固定） */
+#countdown-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 80px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 0, 0, 0.8);
+  pointer-events: none; /* マウスやタッチの邪魔にならないように透過 */
+  z-index: 100;
+  display: none; /* 初期状態は非表示 */
+}
+
+/* 重力警告メッセージ用のスタイル（存在する場合） */
+#gravity-warning {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px;
+  font-weight: bold;
+  color: #ff3333;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+  pointer-events: none;
+  z-index: 90;
+}

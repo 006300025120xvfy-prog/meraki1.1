@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>RANKING - DRAW RUN</title>
+  <style>
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* ▼ 全体を上に寄せるための調整（上部の余白をスリム化） */
+      justify-content: flex-start;
+      padding-top: 3vh;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      color: white;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    body {
+      /* ▼ 縮小・拡大の基準を上部に固定し、上から順にきれいに収める */
+      transform-origin: center top;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      margin-top: 0;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      color: #fff;
+      text-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f;
+    }
+
+    .last-score-container {
+      position: relative;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(0, 255, 204, 0.4);
+      border-radius: 15px;
+      padding: 10px 20px;
+      margin-bottom: 12px;
+      width: 80%;
+      max-width: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.15);
+    }
+
+    .last-score-label {
+      position: absolute;
+      left: 20px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #b8c1ec;
+    }
+
+    .last-score-val-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .last-score-val {
+      font-family: monospace;
+      font-size: 18px;
+      color: #00ffcc;
+    }
+
+    .last-score-date {
+      font-size: 10px;
+      color: #aaa;
+    }
+
+    .ranking-container {
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 10px 25px;
+      width: 80%;
+      max-width: 400px;
+      /* ▼ 高さを適度に調整し、画面内にすっきりと収まるようにする */
+      max-height: 28vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    ol { list-style: none; padding: 0; margin: 0; }
+
+    li {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 20px;
+      margin: 5px 0;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: bold;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    li:nth-child(1) { border-color: #ffd700; }
+    li:nth-child(2) { border-color: #c0c0c0; }
+    li:nth-child(3) { border-color: #cd7f32; }
+
+    .rank-num {
+      position: absolute;
+      left: 20px;
+      font-size: 16px;
+      font-style: italic;
+    }
+
+    .score-val {
+      font-family: monospace;
+      font-size: 16px;
+      color: #00ffcc;
+    }
+
+    .button-container {
+      display: flex;
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .btn {
+      padding: 10px 25px;
+      text-decoration: none;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .back-btn {
+      background: linear-gradient(45deg, #ff007f, #ff758c);
+      color: white;
+      box-shadow: 0 4px 15px rgba(255, 0, 127, 0.4);
+    }
+
+    .reset-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ff4d4d;
+      border: 1px solid rgba(255, 77, 77, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>RANKING</h1>
+  
+  <div class="last-score-container">
+    <span class="last-score-label">前回の記録</span>
+    <div class="last-score-val-area">
+      <span class="last-score-val" id="last-score-display">0 m</span>
+      <span class="last-score-date" id="last-date-display"></span>
+    </div>
+  </div>
+
+  <div class="ranking-container">
+    <ol id="ranking-list"></ol>
+  </div>
+
+  <div class="button-container">
+    <button class="btn reset-btn menu-btn" id="reset-btn">リセット</button>
+    <a href="index.html" class="btn back-btn menu-btn">BACK</a>
+  </div>
+
+  <audio id="setting-bgm" src="title.mp3" loop></audio>
+  <audio id="nyu-sound" src="ニュッ1.mp3" preload="auto"></audio>
+
+  <script>
+    function adjustScale() {
+      const scale = Math.min(window.innerWidth / 400, window.innerHeight / 700);
+      document.body.style.transform = `scale(${scale > 1 ? 1 : scale})`;
+    }
+    window.addEventListener("load", adjustScale);
+    window.addEventListener("resize", adjustScale);
+
+    const settingBgm = document.getElementById("setting-bgm");
+    const nyuSound = document.getElementById("nyu-sound");
+
+    const savedVolume = localStorage.getItem("drawRunBgmVolume");
+    const savedPlayState = localStorage.getItem("drawRunBgmPlaying");
+    const savedCurrentTime = localStorage.getItem("drawRunBgmCurrentTime");
+    let isPlaying = savedPlayState !== "false";
+
+    if (savedVolume !== null) {
+      settingBgm.volume = savedVolume / 100;
+    } else {
+      settingBgm.volume = 0.5;
+    }
+
+    if (savedCurrentTime !== null) {
+      settingBgm.currentTime = parseFloat(savedCurrentTime);
+    }
+
+    if (isPlaying) {
+      settingBgm.play().catch(() => {});
+    } else {
+      settingBgm.pause();
+    }
+
+    window.addEventListener("beforeunload", () => {
+      localStorage.setItem("drawRunBgmCurrentTime", settingBgm.currentTime);
+    });
+
+    function loadRankingData() {
+      const lastRecordData = JSON.parse(localStorage.getItem('drawRunLastScore'));
+      const lastScoreDisplay = document.getElementById('last-score-display');
+      const lastDateDisplay = document.getElementById('last-date-display');
+
+      if (lastRecordData) {
+        lastScoreDisplay.innerText = `${lastRecordData.score} m`;
+        if (lastDateDisplay) lastDateDisplay.innerText = lastRecordData.date;
+      } else {
+        lastScoreDisplay.innerText = "0 m";
+        if (lastDateDisplay) lastDateDisplay.innerText = "";
+      }
+
+      const scores = JSON.parse(localStorage.getItem('drawRunScores')) || [];
+      const listElement = document.getElementById('ranking-list');
+
+      if (scores.length === 0) {
+        listElement.innerHTML = "<li style='justify-content: center; color: #aaa;'>記録はまだありません</li>";
+      } else {
+        listElement.innerHTML = "";
+        scores.forEach((item, index) => {
+          let rankDisplay = (index === 0) ? "👑" : `${index + 1}位`;
+          listElement.innerHTML += `
+            <li>
+              <span class="rank-num">${rankDisplay}</span>
+              <div style="display: flex; flex-direction: column; align-items: center;">
+                <span class="score-val">${item.score} m</span>
+                <span style="font-size: 10px; color: #aaa; margin-top: 2px;">${item.date}</span>
+              </div>
+            </li>
+          `;
+        });
+      }
+    }
+
+    loadRankingData();
+
+    const menuButtons = document.querySelectorAll(".menu-btn");
+    menuButtons.forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const seEnabled = (localStorage.getItem("drawRunSeEnabled") === "true");
+        if (seEnabled && nyuSound) {
+          const savedSeVolume = localStorage.getItem("drawRunSeVolume");
+          nyuSound.volume = savedSeVolume !== null ? savedSeVolume / 100 : 0.5;
+
+          nyuSound.currentTime = 0;
+          nyuSound.play().catch(() => {});
+        }
+
+        if (btn.tagName === "A") {
+          e.preventDefault();
+          const targetUrl = btn.href;
+          setTimeout(() => {
+            window.location.href = targetUrl;
+          }, 200);
+        }
+      });
+    });
+
+    const resetBtn = document.getElementById('reset-btn');
+    resetBtn.addEventListener('click', () => {
+      if (confirm("本当にランキングと前回の記録をリセットしますか？")) {
+        localStorage.removeItem('drawRunScores');
+        localStorage.removeItem('drawRunLastScore');
+        loadRankingData(); 
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>HOW TO PLAY - DRAW RUN</title>
+  <style>
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* ▼ 全体を上に寄せるための調整（上部の余白をスリム化） */
+      justify-content: flex-start;
+      padding-top: 2vh; 
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      color: white;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    body {
+      /* ▼ 縮小・拡大の基準を上部に固定し、上から順にきれいに収める */
+      transform-origin: center top;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      margin-top: 0;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      color: #fff;
+      text-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f;
+    }
+
+    .howto-container {
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 12px 18px;
+      width: 88%;
+      max-width: 400px;
+      /* ▼ 高さを少し広げてスクロールしやすく、かつ画面内に収まるように調整 */
+      max-height: 66vh; 
+      overflow-y: auto;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      text-align: left;
+    }
+
+    .rule-section { margin-bottom: 12px; }
+    .rule-section h2 { font-size: 14px; color: #00ffcc; margin: 0 0 4px 0; }
+    .rule-section p { font-size: 11.5px; line-height: 1.45; margin: 0; color: #ddd; }
+
+    .back-btn {
+      margin-top: 10px;
+      padding: 10px 30px;
+      background: linear-gradient(45deg, #ff007f, #ff758c);
+      color: white;
+      text-decoration: none;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 4px 15px rgba(255, 0, 127, 0.4);
+      border: none;
+      cursor: pointer;
+      display: inline-block;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>HOW TO PLAY</h1>
+  
+  <div class="howto-container">
+    <div class="rule-section">
+      <h2>✏️ 線を描いて進もう</h2>
+      <p>画面をドラッグすると、プレイヤーの足場になる線を描くことができます。線を上手に使って、大きな穴や障害物を乗り越えましょう！</p>
+    </div>
+    <div class="rule-section">
+      <h2>⚠️ インクの制限とクールダウン</h2>
+      <p>一度に描ける線の長さには制限があります。使い切って線をリリースした後は、少しの間（約0.5秒間）クールダウンが発生するのでタイミングが重要です。</p>
+    </div>
+    <div class="rule-section">
+      <h2>❄️ リングでインクの色（効果）を変えよう</h2>
+      <p>ステージ上に登場する巨大なリング（青や水色）を通過すると、インクの種類が変化します。<br>
+      ・<strong>通常インク</strong>：標準的な足場になります。<br>
+      ・<strong>アイスインク</strong>：ツルツル滑る代わりに、スピードがアップして一気に加速できます！</p>
+    </div>
+    <div class="rule-section">
+      <h2>🚀 ワープアイテムを駆使しよう</h2>
+      <p>紫色のワープアイテムに触れると、最大3個までアイテムをストックできます。右下の丸い「🚀WARP」ボタンをタップすると、ストックを1つ消費して前方に一瞬でワープ（300px移動）し、ピンチを切り抜けられます！</p>
+    </div>
+    <div class="rule-section">
+      <h2>🔄 重力反転ゾーン</h2>
+      <p>スコアが進むと「GRAVITY」の警告とともに重力が上下に反転します！天井が床になったり、上下から罠が迫ってくる初見殺しに気をつけましょう。</p>
+    </div>
+    <div class="rule-section">
+      <h2>💀 障害物とゲームオーバー</h2>
+      <p>壁や動くトゲ、隠しトゲなどの障害物にぶつかったり、画面外（上下の落下）に落ちてしまうとゲームオーバーになります。また、プレイヤーが長時間止まってしまうと強制ゲームオーバーになるので常に前へ進み続けましょう！</p>
+    </div>
+  </div>
+
+  <a href="index.html" class="back-btn menu-btn">BACK</a>
+
+  <audio id="setting-bgm" src="title.mp3" loop></audio>
+  <audio id="nyu-sound" src="ニュッ1.mp3" preload="auto"></audio>
+
+  <script>
+    function adjustScale() {
+      const scale = Math.min(window.innerWidth / 400, window.innerHeight / 700);
+      document.body.style.transform = `scale(${scale > 1 ? 1 : scale})`;
+    }
+    window.addEventListener("load", adjustScale);
+    window.addEventListener("resize", adjustScale);
+
+    const settingBgm = document.getElementById("setting-bgm");
+    const nyuSound = document.getElementById("nyu-sound");
+
+    const savedVolume = localStorage.getItem("drawRunBgmVolume");
+    const savedPlayState = localStorage.getItem("drawRunBgmPlaying");
+    const savedCurrentTime = localStorage.getItem("drawRunBgmCurrentTime");
+    let isPlaying = savedPlayState !== "false";
+
+    if (savedVolume !== null) {
+      settingBgm.volume = savedVolume / 100;
+    } else {
+      settingBgm.volume = 0.5;
+    }
+
+    if (savedCurrentTime !== null) {
+      settingBgm.currentTime = parseFloat(savedCurrentTime);
+    }
+
+    if (isPlaying) {
+      settingBgm.play().catch(() => {});
+    } else {
+      settingBgm.pause();
+    }
+
+    window.addEventListener("beforeunload", () => {
+      localStorage.setItem("drawRunBgmCurrentTime", settingBgm.currentTime);
+    });
+
+    const menuButtons = document.querySelectorAll(".menu-btn");
+    menuButtons.forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const seEnabled = (localStorage.getItem("drawRunSeEnabled") === "true");
+        if (seEnabled && nyuSound) {
+          const savedSeVolume = localStorage.getItem("drawRunSeVolume");
+          nyuSound.volume = savedSeVolume !== null ? savedSeVolume / 100 : 0.5;
+          nyuSound.currentTime = 0;
+          nyuSound.play().catch(() => {});
+        }
+
+        if (btn.tagName === "A") {
+          e.preventDefault();
+          const targetUrl = btn.href;
+          setTimeout(() => {
+            window.location.href = targetUrl;
+          }, 200);
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
